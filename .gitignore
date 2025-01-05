@@ -1,0 +1,25 @@
+# Virtual Environment
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+clock/__pycache__/
+
+# Logs
+*.log
+logs/
+
+# macOS
+.DS_Store
+
+# Compiled files
+*.dylib
+*.so
+*.dll
+*.pyd
+
+# Build and cache
+build/
+dist/
+*.egg-info/
