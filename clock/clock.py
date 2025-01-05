@@ -382,7 +382,7 @@ class FloatingClock(QMainWindow):
                 self.time_label.seconds_text = now.strftime(seconds_format)
             
             # Calculate seconds size as a ratio of main font size
-            main_size = self.settings.get_int('appearance', 'font_size', 40)
+            main_size = self.settings.get_int('styling', 'font_size', 40)  # Changed from 'appearance' to 'styling'
             seconds_ratio = self.settings.get_float('format', 'time_seconds_size', 0.5)
             self.time_label.seconds_size = int(main_size * seconds_ratio)
             

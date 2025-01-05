@@ -86,33 +86,32 @@ def open_config_file(clock):
 def toggle_tray_setting(clock, key: str, section: str, value: bool):
     """Toggle a boolean setting while preserving comments"""
     try:
-        ini_path = clock.settings.ini_path
-        
-        # Read the entire file with comments
-        with open(ini_path, 'r') as f:
+        # Read the original file content
+        with open(clock.settings.ini_path, 'r') as f:
             lines = f.readlines()
-            
-        # Find and update the specific setting while keeping comments
-        in_correct_section = False
-        for i, line in enumerate(lines):
-            if line.strip().startswith(f'[{section}]'):
-                in_correct_section = True
-            elif line.strip().startswith('['):
-                in_correct_section = False
-            elif in_correct_section and line.strip().split('=')[0].strip() == key:
-                # Preserve any inline comment
-                parts = line.split(';', 1)
-                comment = f" ;{parts[1]}" if len(parts) > 1 else ''
-                lines[i] = f"{key} = {str(value).lower()}{comment}"
-                
-        # Write back the file with preserved comments
-        with open(ini_path, 'w') as f:
-            f.writelines(lines)
-            
-        # Update the settings in memory
-        clock.settings.load()
         
-        # Handle specific settings
+        # Find the section and key
+        current_section = ''
+        for i, line in enumerate(lines):
+            line = line.strip()
+            # Check for section
+            if line.startswith('[') and line.endswith(']'):
+                current_section = line[1:-1]
+            # When in correct section, find and update the key
+            elif current_section == section and line.split('=')[0].strip() == key:
+                # Preserve any comment that might exist
+                parts = line.split(';', 1)
+                base = parts[0].split('=')[0]
+                comment = ';' + parts[1] if len(parts) > 1 else ''
+                # Update the line with new value while keeping comment
+                lines[i] = f"{base}= {str(value).lower()}{comment}\n"
+                break
+        
+        # Write back the modified content
+        with open(clock.settings.ini_path, 'w') as f:
+            f.writelines(lines)
+        
+        # Handle specific settings separately
         if key == 'always_on_top':
             clock.settings._update_window_attributes(clock)
         elif key == 'auto_hide':
