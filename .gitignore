@@ -18,6 +18,7 @@ logs/
 *.so
 *.dll
 *.pyd
+*.app
 
 # Build and cache
 build/

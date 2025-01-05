@@ -2,6 +2,22 @@
 
 A minimalist, customizable floating clock for macOS built with Python and PySide6.
 
+## Screenshots
+
+### Clock Styles
+![12h clock with drop shadow](screenshots/design_idea2.png)
+*12h clock with drop shadow, am pm 0.5 size*
+
+![24h clock with seconds](screenshots/design_idea1.png)
+*24h clock with drop shadow, seconds 0.5 size*
+
+![12h clock with outlining](screenshots/design_idea3.png)
+*12h clock with 2 transparent and gradient outlining, drop shadow, seconds & am pm 0.5 size*
+
+### Controls
+![System Tray Menu](screenshots/tray_menu.png)
+*Easy access to settings via system tray*
+
 ## Features
 - Transparent, floating clock that stays on top
 - Auto-hide when mouse is nearby

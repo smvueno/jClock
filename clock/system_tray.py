@@ -84,29 +84,42 @@ def open_config_file(clock):
         logger.error(f"Error opening config: {e}")
 
 def toggle_tray_setting(clock, key: str, section: str, value: bool):
-    """Toggle a boolean setting"""
+    """Toggle a boolean setting while preserving comments"""
     try:
-        # Update the config file
-        config = configparser.ConfigParser(interpolation=None)
-        config.read(clock.settings.ini_path)
+        ini_path = clock.settings.ini_path
         
-        if not config.has_section(section):
-            config.add_section(section)
+        # Read the entire file with comments
+        with open(ini_path, 'r') as f:
+            lines = f.readlines()
             
-        config.set(section, key, str(value).lower())
+        # Find and update the specific setting while keeping comments
+        in_correct_section = False
+        for i, line in enumerate(lines):
+            if line.strip().startswith(f'[{section}]'):
+                in_correct_section = True
+            elif line.strip().startswith('['):
+                in_correct_section = False
+            elif in_correct_section and line.strip().split('=')[0].strip() == key:
+                # Preserve any inline comment
+                parts = line.split(';', 1)
+                comment = f" ;{parts[1]}" if len(parts) > 1 else ''
+                lines[i] = f"{key} = {str(value).lower()}{comment}"
+                
+        # Write back the file with preserved comments
+        with open(ini_path, 'w') as f:
+            f.writelines(lines)
+            
+        # Update the settings in memory
+        clock.settings.load()
         
-        with open(clock.settings.ini_path, 'w') as f:
-            config.write(f)
-        
-        # Handle specific settings separately
+        # Handle specific settings
         if key == 'always_on_top':
-            # Force window attributes update for always-on-top
             clock.settings._update_window_attributes(clock)
         elif key == 'auto_hide':
-            # Only update auto-hide behavior, don't touch window flags
             clock.hidden = not value
-            if not value:  # If disabling auto-hide
-                clock.setWindowOpacity(1.0)  # Make fully visible
+            if not value:
+                clock.setWindowOpacity(1.0)
+                
     except Exception as e:
         logger.error(f"Error toggling setting {key}: {e}")
 
