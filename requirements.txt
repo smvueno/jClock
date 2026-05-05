@@ -3,3 +3,5 @@ shiboken6==6.8.1
 pyobjc-core==10.3.2
 pyobjc-framework-Cocoa==10.3.2
 pyobjc-framework-Quartz==10.3.2
+flask>=3.0.0
+pytest>=8.0.0

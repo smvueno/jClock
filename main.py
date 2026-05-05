@@ -11,6 +11,8 @@ from Foundation import NSBundle
 from clock.platform import hide_dock_icon  # Import hide_dock_icon
 from logger_config import setup_logging, get_logger  # Import the logging setup and utility
 
+from flask import Flask, jsonify
+
 # Add the project root to Python path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
@@ -32,6 +34,15 @@ def cleanup(logger):
     except Exception as e:
         logger.exception("Error during cleanup")
     sys.exit(0)
+
+
+# Flask app for health endpoint
+flask_app = Flask(__name__)
+
+@flask_app.route('/health')
+def health():
+    return jsonify({"status": "ok"})
+
 
 def signal_handler(signum, frame, logger):
     """Handle interrupt signals"""
