@@ -14,6 +14,9 @@ from logger_config import get_logger
 # Configure logger
 logger = get_logger(__name__)
 
+__slots__ = ('watchers', 'config', 'config_dir', 'ini_path', 'last_modified',
+             'file_watcher')
+
 if APPKIT_AVAILABLE:
     from AppKit import NSFloatingWindowLevel, NSNormalWindowLevel, NSWindowCollectionBehaviorCanJoinAllSpaces, NSWindowCollectionBehaviorStationary, NSWindowCollectionBehaviorParticipatesInCycle
 
@@ -138,7 +141,9 @@ class ClockSettings:
 
     def _notify_watchers(self) -> None:
         """Notify all watchers of settings changes"""
-        for watcher in self.watchers:
+        # Create a copy to avoid issues if watchers modify the list during iteration
+        watchers_copy = self.watchers.copy()
+        for watcher in watchers_copy:
             try:
                 watcher()
             except Exception as e:

@@ -26,8 +26,13 @@ def cleanup(logger):
         logger.info("Cleaning up application...")
         app = QApplication.instance()
         if app:
+            # Properly cleanup all windows
             for window in app.topLevelWidgets():
                 window.close()
+                if hasattr(window, 'close'):
+                    window.close()
+                if hasattr(window, 'deleteLater'):
+                    window.deleteLater()
             app.quit()
     except Exception as e:
         logger.exception("Error during cleanup")
