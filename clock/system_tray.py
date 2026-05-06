@@ -10,6 +10,11 @@ logger = get_logger(__name__)
 
 def setup_system_tray(clock):
     """Setup system tray icon and menu"""
+    # Clean up existing tray if present to prevent resource leaks
+    if hasattr(clock, 'tray') and clock.tray is not None:
+        clock.tray.hide()
+        clock.tray.deleteLater()
+
     tray = QSystemTrayIcon(clock)
     
     # Create icon with white 'J'
@@ -124,5 +129,9 @@ def toggle_tray_setting(clock, key: str, section: str, value: bool):
 
 def quit_tray_application(clock):
     """Properly quit the entire application"""
+    # Clean up tray icon before quitting
+    if hasattr(clock, 'tray') and clock.tray is not None:
+        clock.tray.hide()
+        clock.tray.deleteLater()
     clock.close()
     QApplication.instance().quit()

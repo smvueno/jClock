@@ -46,6 +46,8 @@ from logger_config import setup_logging, get_logger  # Import the logging setup 
 # Configure logger
 logger = get_logger(__name__)
 
+__slots__ = ()
+
 # Update AppKit imports for better fullscreen detection
 try:
     from AppKit import (
@@ -151,6 +153,9 @@ class ClockGeometry:
 
 class OutlinedClock(QLabel):
     """Custom label with gradient outline support"""
+    __slots__ = ('outline_width', 'gradient_start', 'gradient_end', 'gradient_angle',
+                 'text_color', 'time_text', 'seconds_text', 'seconds_size')
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -237,6 +242,10 @@ class OutlinedClock(QLabel):
         painter.drawPath(path)
 
 class FloatingClock(QMainWindow):
+    __slots__ = ('settings', 'timer', 'mouse_timer', 'geometry_handler', 'fullscreen_timer',
+                 'is_fullscreen_active', 'hidden', '_opacity', 'animation', 'time_label',
+                 'native_window', '_last_fullscreen_error')
+
     def __init__(self):
         super().__init__(flags=(
             Qt.FramelessWindowHint |
@@ -311,19 +320,23 @@ class FloatingClock(QMainWindow):
     
     def animate_opacity(self, end_value, on_finished=None):
         """Animate window opacity with configurable duration"""
+        # Stop existing animation before starting a new one to prevent resource waste
         if self.animation.state() == QPropertyAnimation.Running:
             self.animation.stop()
             
+
         duration = self.settings.get_int('behavior', 'fade_duration', 500)
         self.animation.setDuration(duration)
         self.animation.setStartValue(self.windowOpacity())
         self.animation.setEndValue(end_value)
         
+
         if on_finished:
             self.animation.finished.connect(lambda: (
                 on_finished(), 
                 self.animation.finished.disconnect()
             ))
+        self.animation.start()
             
         self.animation.start()
     
@@ -433,14 +446,23 @@ class FloatingClock(QMainWindow):
         """Enhanced cleanup with tray icon removal"""
         self.animate_opacity(0, lambda: super().closeEvent(event))
         event.ignore()  # Prevent immediate close
+
+        # Cleanup timers to prevent memory leaks
         if hasattr(self, 'tray'):
             self.tray.hide()
+            self.tray.deleteLater()
         if self.timer is not None:
             self.timer.stop()
+            self.timer.deleteLater()
         if self.mouse_timer:
             self.mouse_timer.stop()
+            self.mouse_timer.deleteLater()
         if self.fullscreen_timer:
             self.fullscreen_timer.stop()
+            self.fullscreen_timer.deleteLater()
+        if self.animation:
+            self.animation.stop()
+            self.animation.deleteLater()
         if self.settings:
             self.settings.remove_watcher(lambda: self.settings.apply_settings(self))
         super().closeEvent(event)
